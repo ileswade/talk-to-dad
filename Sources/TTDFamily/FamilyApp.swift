@@ -111,6 +111,8 @@ final class FamilyModel: ObservableObject {
             notice = nil
             player = try? AVAudioPlayer(contentsOf: audioURL(id))
             player?.play()
+        case "update":
+            notice = "Dad's Mac: " + (msg["status"] as? String ?? "")
         case "queued":
             notice = "Dad's Mac is offline. Your message will be spoken when it's back."
         case "error":
@@ -178,6 +180,9 @@ struct FamilyView: View {
             Circle().fill(p.colour).frame(width: 12, height: 12)
             Text(p.text).font(.headline)
             Spacer()
+            if let v = model.presence["version"] as? String { Text("TTD \(v)").font(.caption).foregroundStyle(.secondary) }
+            Button("Update Dad's Mac") { model.relay.send(["type": "update", "id": UUID().uuidString]) }
+                .disabled(!model.dadOnline).controlSize(.small)
             Text(model.relay.connected ? "Connected" : model.relay.status).font(.caption).foregroundStyle(.secondary)
         }
         .padding(10)

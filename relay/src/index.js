@@ -86,7 +86,7 @@ export class Room {
 
     // From family: say, screenshot, camera, audio (request a recording). Stamp who sent it.
     const name = (tags.find((t) => t.startsWith("name:")) || "name:family").slice(5);
-    if (!["say", "screenshot", "camera", "audio", "presence?"].includes(msg.type)) return;
+    if (!["say", "screenshot", "camera", "audio", "presence?", "update"].includes(msg.type)) return;
     msg.from = msg.type === "say" ? (msg.from || name) : name;
     msg.at = Date.now();
     const dad = this.state.getWebSockets("dad");

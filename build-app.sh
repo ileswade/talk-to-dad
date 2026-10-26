@@ -2,6 +2,9 @@
 # Builds a self-contained "Talk to Dad.app" (system frameworks only) into ./dist.
 set -e
 cd "${0:A:h}"
+VERSION=$(cat VERSION)
+# Stable signing identity so macOS keeps Dad's permissions across updates.
+SIGN_ID="${TTD_SIGN_ID:-Apple Development: Iles Wade (W7Q4ZU9D65)}"
 swift build -c release
 APP="dist/Talk to Dad.app"
 rm -rf "$APP"
@@ -26,7 +29,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>Talk to Dad</string>
   <key>CFBundleExecutable</key><string>TalkToDad</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.3</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>1</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
   <key>LSUIElement</key><true/>
@@ -36,7 +39,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSSpeechRecognitionUsageDescription</key><string>Talk to Dad turns Dad's spoken answer into text on this Mac.</string>
 </dict></plist>
 PLIST
-codesign --force --deep --sign - "$APP"
+codesign --force --deep --sign "$SIGN_ID" "$APP"
 ditto -c -k --keepParent "$APP" dist/Talk-to-Dad.zip
 # Drag-to-install disk image for a fresh Mac.
 STAGE=$(mktemp -d); cp -R "$APP" "$STAGE/"; ln -s /Applications "$STAGE/Applications"
@@ -58,11 +61,11 @@ cat > "$FAM/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>TTD Family</string>
   <key>CFBundleExecutable</key><string>TTDFamily</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.3</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>1</string>
   <key>LSMinimumSystemVersion</key><string>26.0</string>
 </dict></plist>
 PLIST
-codesign --force --sign - "$FAM"
+codesign --force --sign "$SIGN_ID" "$FAM"
 ditto -c -k --keepParent "$FAM" dist/TTD-Family.zip
 echo "built $FAM ($(du -sh "$FAM" | cut -f1))"

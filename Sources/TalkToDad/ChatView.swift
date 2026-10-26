@@ -231,6 +231,14 @@ struct SettingsForm: View {
                 }
                 Text(relay.status).font(.caption).foregroundStyle(relay.connected ? .green : .secondary)
             }
+            Section("Updates") {
+                HStack {
+                    Text("Version \(Updater.currentVersion)")
+                    Spacer()
+                    Button("Check now") { model.updater.check(install: true) }
+                }
+                if !model.updater.status.isEmpty { Text(model.updater.status).font(.caption).foregroundStyle(.secondary) }
+            }
             Toggle("Start automatically when the Mac starts", isOn: $model.startAtLogin)
             Button("Test \(model.sender)'s voice") {
                 speaker.speak("Hi Dad, it's \(model.sender). Can you hear me okay?", voice: model.voice(for: model.sender))

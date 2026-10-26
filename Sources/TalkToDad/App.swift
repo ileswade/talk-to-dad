@@ -44,6 +44,7 @@ final class ChatModel: ObservableObject {
     let texts = MessagesWatcher()
     let replies = MessagesSender()
     let relay = RelayClient()
+    let updater = Updater()
     private var waiting: [MessagesWatcher.Incoming] = []   // texts that arrived while busy
 
     @Published var announce: Bool = UserDefaults.standard.object(forKey: "announce") as? Bool ?? true {
@@ -98,6 +99,8 @@ final class ChatModel: ObservableObject {
         texts.onMessage = { [weak self] msg in self?.received(msg) }
         texts.start()
         startRelay()
+        updater.onStatus = { [weak self] text in self?.relay.send(["type": "update", "status": text, "version": Updater.currentVersion]) }
+        updater.start()
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.playWaiting() }
         Listener.requestPermissions { [weak self] problem in self?.permissionProblem = problem }
         if !UserDefaults.standard.bool(forKey: "loginItemSetUp") {
@@ -225,7 +228,7 @@ final class ChatModel: ObservableObject {
 
     private func sendPresence(force: Bool) {
         let idle = Int(Presence.idleSeconds)
-        let p: [String: Any] = ["type": "presence", "idleSeconds": idle, "locked": Presence.screenLocked,
+        let p: [String: Any] = ["type": "presence", "version": Updater.currentVersion, "idleSeconds": idle, "locked": Presence.screenLocked,
                                 "speaking": speaker.isSpeaking, "listening": listener.isListening,
                                 "at": Int(Date().timeIntervalSince1970 * 1000)]
         // Send when something meaningful changed (or every few minutes to keep "last seen" fresh).
@@ -274,6 +277,8 @@ final class ChatModel: ObservableObject {
             relay.send(["type": "audio", "id": id, "lineId": lineID, "m4a": audio.base64EncodedString()])
         case "presence?":
             sendPresence(force: true)
+        case "update":
+            updater.check(install: true)
         default:
             break
         }
