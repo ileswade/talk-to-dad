@@ -1,0 +1,13 @@
+name = "ttd-relay"
+main = "src/index.js"
+compatibility_date = "2025-09-01"
+
+[[durable_objects.bindings]]
+name = "ROOM"
+class_name = "Room"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Room"]
+
+# Secrets (set with `wrangler secret put`, never in this file): DAD_TOKEN, FAMILY_TOKEN

@@ -1,0 +1,8 @@
+.build/
+dist/
+voice-samples/
+relay/.dev.vars
+relay/.wrangler/
+relay/node_modules/
+.DS_Store
+*.wav
